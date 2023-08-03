@@ -1,0 +1,9 @@
+services:
+    ioquake3:
+        image: ioquake3-docker
+        volumes:
+            - ./baseq3:/opt/quake3/baseq3
+        ports:
+            - 27960:27960/udp
+        env_file:
+            - .env
