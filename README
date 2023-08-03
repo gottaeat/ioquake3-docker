@@ -1,2 +1,16 @@
 ioquake3-docker
 ===============
+build:
+    1. docker build -t ioquake3-docker .
+
+installation:
+    1. `cp env .env` and modify the contents.
+    2. add quake3 .pk3 files in baseq3/.
+    3. docker compose up -d
+        or
+    1. docker run \
+        -p 27960:27960/udp                \
+        -v $PWD/baseq3:/opt/quake3/baseq3 \
+        -e MOTD="good-motd"               \
+        -e RCON_PASS="good-passwd"        \
+        ioquake3-docker
