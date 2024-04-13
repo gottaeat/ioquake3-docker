@@ -1,6 +1,6 @@
-# build image
-FROM alpine:3.18.2 AS build
-WORKDIR /build
+# build ioquake3
+FROM alpine:latest AS ioquake3-build
+
 ADD ./ioq3 /build
 
 ENV \
@@ -15,27 +15,30 @@ ENV \
     USE_CURL=1 \
     USE_CURL_DLOPEN=0 \
     USE_INTERNAL_LIBS=0 \
-    DEFAULT_BASEDIR=/opt/quake3 \
-    COPYDIR=/build/tempinstall/quake3
+\
+    DEFAULT_BASEDIR=/quake \
+    COPYDIR=/build/tempinstall
+
+WORKDIR /build
 
 RUN \
+    apk update && apk upgrade && \
     apk --no-cache add curl g++ gcc make zlib-dev && \
-    mkdir tempinstall/quake3/ -pv && \
-    make && \
-    make copyfiles 
+\
+    mkdir tempinstall/bin/ -pv && \
+    make && make copyfiles
 
-# game image w/o build artifacts
-FROM alpine:3.18.2 AS ioquake3
+# move the bins to the actual image
+FROM alpine:latest AS ioquake3
 
 RUN \
- adduser quake -D -h /home/quake && \
- mkdir -pv /home/quake/.q3a/baseq3/ /opt/quake3/baseq3 && \
- chown quake:quake -R /home/quake/.q3a/
+    addgroup -g 1337 quake && \
+    adduser -D -h /home/quake -G quake -u 1337 quake && \
+    mkdir -pv /home/quake/.q3a/baseq3 && \
+    ln -sfv /config/dockerquake.cfg /home/quake/.q3a/baseq3/
 
-COPY --from=build /build/tempinstall/quake3 /opt/quake3
-COPY bin/ /opt/quake3/
-COPY --chown=quake etc/ /home/quake/.q3a/baseq3/
+COPY --from=ioquake3-build /build/tempinstall/ioq3ded.x86_64 /quake/
+COPY static /static
 
-USER quake
 EXPOSE 27960/udp
-CMD /opt/quake3/quake-wrapper.sh
+CMD /static/shell/entrypoint.sh
