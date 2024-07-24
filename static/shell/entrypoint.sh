@@ -1,6 +1,8 @@
 #!/bin/ash
 . /static/shell/common
 
+trap shutdown SIGTERM SIGINT
+
 # -- sanity check vars -- #
 if [ -z "${MOTD}" ]; then
     perr "MOTD variable was not set or is empty."
@@ -47,8 +49,11 @@ _ARGS="${_ARGS} ${EXTRA_ARGS}"
 
 pinfo "setting permissions."
 chown -Rh quake:quake /config /home/quake
+evalret
 
 pinfo "ioq3ded.x86_64 cmdline args:"
 pinfo "${_ARGS}"
 
-su quake -c "/quake/ioq3ded.x86_64 ${_ARGS}"
+su quake -c "/quake/ioq3ded.x86_64 ${_ARGS}" &
+
+wait $!
