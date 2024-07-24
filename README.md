@@ -3,8 +3,12 @@ ioquake3-docker provides a dockerized ioquake3 server environment.
 
 ### installation
 ```sh
-cp env.example .env # modify as needed
-docker compose up -d
+git clone --depth=1 https://github.com/gottaeat/ioquake3-docker
+cd ioquake3-docker/
+
+cp env.example .env # modify the contents
+
+docker compose up
 ```
 
 ### warning
