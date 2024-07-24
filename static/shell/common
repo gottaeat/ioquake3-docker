@@ -11,6 +11,18 @@ evalret(){
     fi
 }
 
+shutdown() {
+    pinfo "caught SIGTERM/SIGINT, gracefully shutting down."
+
+    ioq3_pid="$(pidof ioq3ded.x86_64)"
+    for pid in ${ioq3_pid}; do
+        pinfo "killing ${pid}"
+        kill -TERM "${pid}"
+    done
+
+    exit 0
+}
+
 pinfo(){ echo "INFO: ${@}";}
 pwarn(){ echo "WARN: ${@}";}
 perr(){ echo "ERR : ${@}"; exit 1;}
