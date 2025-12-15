@@ -14,7 +14,7 @@ evalret(){
 shutdown() {
     pinfo "caught SIGTERM/SIGINT, gracefully shutting down."
 
-    ioq3_pid="$(pidof ioq3ded.x86_64)"
+    ioq3_pid="$(pidof ioq3ded)"
     for pid in ${ioq3_pid}; do
         pinfo "killing ${pid}"
         kill -TERM "${pid}"

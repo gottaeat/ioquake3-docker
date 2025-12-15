@@ -51,9 +51,9 @@ pinfo "setting permissions."
 chown -Rh quake:quake /config /home/quake
 evalret
 
-pinfo "ioq3ded.x86_64 cmdline args:"
+pinfo "ioq3ded cmdline args:"
 pinfo "${_ARGS}"
 
-su quake -c "/quake/ioq3ded.x86_64 ${_ARGS}" &
+su quake -c "/quake/ioq3ded ${_ARGS}" &
 
 wait $!
