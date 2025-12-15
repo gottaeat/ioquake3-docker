@@ -1,35 +1,48 @@
 # build ioquake3
-FROM alpine:latest AS ioquake3-build
+FROM alpine:3.23.0 AS ioquake3-build
 
-ADD ./ioq3 /build
+WORKDIR /ioq3
 
-ENV \
-    BUILD_STANDALONE=0 \
-    BUILD_CLIENT=0 \
-    BUILD_SERVER=1 \
-    BUILD_GAME_SO=0 \
-    BUILD_GAME_QVM=0 \
-    BUILD_BASEGAME=1 \
-    BUILD_MISSIONPACK=0 \
-    BUILD_AUTOUPDATER=0 \
-    USE_CURL=1 \
-    USE_CURL_DLOPEN=0 \
-    USE_INTERNAL_LIBS=0 \
-\
-    DEFAULT_BASEDIR=/quake \
-    COPYDIR=/build/tempinstall
+COPY ./ioq3 /ioq3
 
-WORKDIR /build
-
+# apk-tools has a bug that breaks on emulated armv7
 RUN \
-    apk update && apk upgrade && \
-    apk --no-cache add curl g++ gcc make zlib-dev && \
+    apk update && \
+    apk upgrade --scripts=no apk-tools && \
+    apk upgrade && \
+    apk --no-cache add cmake gcc g++ make zlib-dev && \
 \
-    mkdir tempinstall/bin/ -pv && \
-    make && make copyfiles
+    rm -rfv .git || true && \
+    cmake -S . -B build -Wno-dev \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/quake \
+        -DBUILD_CLIENT=OFF \
+        -DBUILD_GAME_LIBRARIES=OFF \
+        -DBUILD_GAME_QVMS=OFF \
+        -DBUILD_RENDERER_GL1=OFF \
+        -DBUILD_RENDERER_GL2=OFF \
+        -DBUILD_SERVER=ON \
+        -DBUILD_STANDALONE=OFF \
+        -DUSE_CODEC_OPUS=OFF \
+        -DUSE_CODEC_VORBIS=OFF \
+        -DUSE_FREETYPE=OFF \
+        -DUSE_HTTP=OFF \
+        -DUSE_INTERNAL_JPEG=OFF \
+        -DUSE_INTERNAL_LIBS=OFF \
+        -DUSE_INTERNAL_OGG=OFF \
+        -DUSE_INTERNAL_OPUS=OFF \
+        -DUSE_INTERNAL_SDL=OFF \
+        -DUSE_INTERNAL_VORBIS=OFF \
+        -DUSE_INTERNAL_ZLIB=OFF \
+        -DUSE_MUMBLE=OFF \
+        -DUSE_OPENAL=OFF \
+        -DUSE_OPENAL_DLOPEN=OFF \
+        -DUSE_RENDERER_DLOPEN=OFF \
+        -DUSE_VOIP=OFF && \
+    cmake --build build
 
 # move the bins to the actual image
-FROM alpine:latest AS ioquake3
+FROM alpine:3.23.0 AS ioquake3
 
 RUN \
     addgroup -g 1337 quake && \
@@ -37,8 +50,8 @@ RUN \
     mkdir -pv /home/quake/.q3a/baseq3 && \
     ln -sfv /config/dockerquake.cfg /home/quake/.q3a/baseq3/
 
-COPY --from=ioquake3-build /build/tempinstall/ioq3ded.x86_64 /quake/
-COPY static /static
+COPY --from=ioquake3-build /ioq3/build/Release/ioq3ded /quake/
+COPY ./static /static
 
 EXPOSE 27960/udp
-CMD /static/shell/entrypoint.sh
+CMD ["/static/shell/entrypoint.sh"]
