@@ -1,5 +1,5 @@
 # build ioquake3
-FROM alpine:3.23.0 AS ioquake3-build
+FROM alpine:3.24.2 AS ioquake3-build
 
 WORKDIR /ioq3
 
